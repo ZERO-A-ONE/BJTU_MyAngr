@@ -12,5 +12,7 @@ def bytes2hex(bytes):
 def list2hex(list,len):
     temp = ""
     for i in range(len):
-        temp += str(hex(list[i]))
+        tmp = str(hex(list[i]))
+        tmp = tmp[2:]
+        temp += tmp
     return temp

@@ -1,12 +1,7 @@
-#! /usr/bin/env python
-# -*-coding: utf-8 -*-
-
-import sys
 import struct
 
 class ELFError(Exception):
     pass
-
 
 SHF_WRITE = 0x1
 SHF_ALLOC = 0x2
@@ -392,7 +387,8 @@ def ELF_ST_VISIBILITY(i):
     return ((i) & 0x3)
 
 
-def readelf(elf):
+def readelf(path):
+    elf = open(path, 'rb')
     '''
   #define EI_NIDENT 16
   typedef struct{
@@ -523,7 +519,7 @@ def readelf(elf):
             p_type, p_flags, p_offset, p_vaddr, p_paddr, p_filesz, p_memsz, p_align = struct.unpack('IIQQQQQQ',
                                                                                                     elf.read(56))
 
-        # INTERP
+
         if p_type == 3:
             e_shinterpndx = i
 
