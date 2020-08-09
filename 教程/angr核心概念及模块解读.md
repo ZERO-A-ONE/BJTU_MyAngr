@@ -16,7 +16,7 @@
 
 使用 angr 第一件事就是加载二进制文件，在 angr 中，基本上所有的对象操作都依赖于已有的 Project 。
 
-```
+```bash
 >>> import angr
 >>> proj = angr.Project('/bin/true')
 ```
@@ -29,7 +29,7 @@
 
 载入二进制文件后，我们就可以访问一些基本属性，如文件名、架构、入口地址：
 
-```
+```bash
 >>> proj.arch
 >>> proj.entry
 >>> proj.filename
@@ -43,14 +43,14 @@
 
 可以通过  Project 的 `.loader`的属性查看
 
-```
+```bash
 >>> proj.loader
 <Loaded true, maps [0x400000:0x5004000]>
 ```
 
 通过 loader, 我们可以获得二进制文件的共享库、地址空间等信息。
 
-```
+```bash
 >>> proj.loader.shared_objects
 OrderedDict([('true', <ELF Object true, maps [0x400000:0x60721f]>), ('libc.so.6', <ELF Object libc-2.27.so, maps [0x1000000:0x13f0adf]>), ('ld-linux-x86-64.so.2', <ELF Object ld-2.27.so, maps [0x2000000:0x222916f]>)])
 >>> proj.loader.min_addr
@@ -65,14 +65,14 @@ OrderedDict([('true', <ELF Object true, maps [0x400000:0x60721f]>), ('libc.so.6'
 
 即程序基本块，我们可以给定地址，获取对应的基本块，为 Block 对象。
 
-```
+```bash
 >>> block = proj.factory.block(proj.entry)
 <Block for 0x4017b0, 42 bytes>
 ```
 
 可以查看 Block 对象的信息或执行操作，以下是接口
 
-```
+```bash
 >>> block.
 block.BLOCK_MAX_SIZE          block.instruction_addrs       block.serialize_to_cmessage(
 block.addr                    block.instructions            block.size
@@ -86,7 +86,7 @@ block.codenode                block.serialize(
 
 Project  对象仅表示程序的初始镜像，而在执行时，我们实际上是对  SimState  对象进行操作，它代表程序的一个实例镜像，模拟执行某个时刻的状态。
 
-```
+```bash
 >>> state = proj.factory.entry_state()
 <SimState @ 0x401670>
 ```
@@ -95,7 +95,7 @@ Project  对象仅表示程序的初始镜像，而在执行时，我们实际�
 
 我们可以通过 `state.regs` 和  `state.mem` 访问寄存器和内存信息。
 
-```
+```bash
 >>> state.regs.rip
 <BV64 0x4017b0>
 >>> state.regs.rax
@@ -108,7 +108,7 @@ Project  对象仅表示程序的初始镜像，而在执行时，我们实际�
 
 以下展示位向量和 int 的相互转换
 
-```
+```bash
 >>> bv = state.solver.BVV(0x1234, 32)       # create a 32-bit-wide bitvector with value 0x1234
 <BV32 0x1234>                               # BVV stands for bitvector value
 >>> state.solver.eval(bv)                # convert to python int
@@ -117,7 +117,7 @@ Project  对象仅表示程序的初始镜像，而在执行时，我们实际�
 
 我们可以存储位向量到寄存器/内存中，或者直接使用 int 类型，它会被自动转成位向量。
 
-```
+```bash
 >>> state.regs.rsi = state.solver.BVV(3, 64)
 >>> state.regs.rsi
 <BV64 0x3>
@@ -143,7 +143,7 @@ SM(Simulation Managers) 用于管理 state，执行 运行、模拟等操作。
 
 我们使用单个 state 或 state 列表创建 `Simulation Managers`
 
-```
+```bash
 >>> simgr = proj.factory.simulation_manager(state)
 >>> simgr.active
 [<SimState @ 0x4017b0>]
@@ -159,7 +159,7 @@ SM(Simulation Managers) 用于管理 state，执行 运行、模拟等操作。
 
 再次查看 `active`，可以看到已经从 `0x4017b0` 变为 `0x1021ab0` . 而初始 state 不会受到影响， 因为执行不会改变 `SimState` 对象。
 
-```
+```bash
 >>> simgr.active
 [<SimState @ 0x1021ab0>]
 >>> simgr.active[0].regs.rip
@@ -172,7 +172,7 @@ SM(Simulation Managers) 用于管理 state，执行 运行、模拟等操作。
 
 angr 内置了一些分析方法，用于提取程序信息。接口位于 `proj.analyses.` 中
 
-```
+```bash
 >>> proj.analyses.
 proj.analyses.BackwardSlice(              proj.analyses.Decompiler(                 proj.analyses.VFG(
 proj.analyses.BasePointerSaveSimplifier(  proj.analyses.DefUseAnalysis(             proj.analyses.VSA_DDG(
@@ -210,7 +210,7 @@ proj.analyses.BinaryOptimizer(            proj.analyses.DominanceFrontier(      
 
 - `.all_objects/shared_objects/all_elf_objects/extern_object/kernel_object`
 
-```
+```bash
 >>> obj = proj.loader.main_object
 <ELF Object true, maps [0x400000:0x60721f]>
 >>> obj = proj.loader.all_objects
@@ -221,14 +221,14 @@ proj.analyses.BinaryOptimizer(            proj.analyses.DominanceFrontier(      
 
 - 获取 ELF 的内存分段和文件分段
 
-```
+```bash
 >>> obj.sections                     
 <Regions: [<Unnamed | offset 0x0, vaddr 0x400000, size 0x0>, <.interp | offset 0x238, vaddr 0x400238, size 0x1c>, <.note.ABI-tag | offset 0x254, vaddr 0x400254, size 0x20>, <.note.gnu.build-id | offset 0x274, vaddr 0x400274, size 0x24>, <.gnu.hash | offset 0x298, vaddr 0x400298, size 0x64>,...
 ```
 
 - 获取 PLT 表信息
 
-```
+```bash
 >>> obj.plt
 {'__uflow': 0x401400,
  'getenv': 0x401410,
@@ -241,7 +241,7 @@ proj.analyses.BinaryOptimizer(            proj.analyses.DominanceFrontier(      
 
 - 显示预链接基址和实际装载的内存基址等地址信息
 
-```
+```bash
 >>> obj.linked_base
 0x0
 >>> 
@@ -259,7 +259,7 @@ proj.analyses.BinaryOptimizer(            proj.analyses.DominanceFrontier(      
 
 #### 查找符号
 
-```
+```bash
 >>> malloc = proj.loader.find_symbol('malloc')
 <Symbol "malloc" in extern-address space at 0x10002c0>
 ```
@@ -272,7 +272,7 @@ malloc = proj.loader.main_object.get_symbol('malloc')
 
 我们会得到一个 symbol 对象，可以获取获取符号名/所属者/链接地址/相对地址等信息。
 
-```
+```bash
 >>> malloc.
 malloc.is_common           malloc.is_local            malloc.owner_obj           malloc.resolvedby
 malloc.is_export           malloc.is_static           malloc.rebased_addr        malloc.size
@@ -288,7 +288,7 @@ symbol 对象有三种获取其地址的方式：
 - `.linked_addr`: 相对于二进制的预链接基址的地址。 
 - `.relative_addr`: 相对于对象基址的地址。 
 
-```
+```bash
 >>> malloc.rebased_addr
 0x10002c0
 >>> malloc.linked_addr 
@@ -311,7 +311,7 @@ symbol 对象有三种获取其地址的方式：
 
 在进行一些程序分析时，如果  auto_load_libs 为 True, angr 会同时分析动态链接库，导致耗时非常久，所以可以根据自己需要设置恰当的值。
 
-```
+```bash
 >>> proj = angr.Project('/bin/true')
 >>> proj.loader.shared_objects
 OrderedDict([('true', <ELF Object true, maps [0x400000:0x60721f]>), ('libc.so.6', <ELF Object libc-2.27.so, maps [0x1000000:0x13f0adf]>), ('ld-linux-x86-64.so.2', <ELF Object ld-2.27.so, maps [0x2000000:0x222916f]>)])
@@ -331,7 +331,7 @@ OrderedDict([('true', <ELF Object true, maps [0x400000:0x60721f]>)])
 
 示例如下：
 
-```
+```bash
 >>> angr.Project('examples/fauxware/fauxware', main_opts={'backend': 'blob', 'arch': 'i386'}, lib_opts={'libc.so.6': {'backend': 'elf'}})
 <Project examples/fauxware/fauxware>
 ```
@@ -360,7 +360,7 @@ OrderedDict([('true', <ELF Object true, maps [0x400000:0x60721f]>)])
 
 `SimProcedures`   是一个两层的字典，第一层表示包名，第二层表示函数名。
 
-```
+```bash
 >>> angr.procedures.
 angr.procedures.SIM_PROCEDURES  angr.procedures.java_lang       angr.procedures.stubs
 angr.procedures.SimProcedures   angr.procedures.java_util       angr.procedures.testing
@@ -386,7 +386,7 @@ angr.procedures.glibc           angr.procedures.msvcr           .......
 
 还可以通过  `proj.hook_symbol(name,hook)` hook 函数。
 
-```
+```bash
 >>> stub_func = angr.SIM_PROCEDURES['stubs']['ReturnUnconstrained'] # this is a CLASS
 >>> proj.hook(0x10000, stub_func())  # hook with an instance of the class
 >>> proj.is_hooked(0x10000)            # these functions should be pretty self-explanitory
@@ -428,7 +428,7 @@ state 代表程序的一个实例镜像，模拟执行某个时刻的状态。�
 
 通过 `state.regs` 对象的属性访问以及修改寄存器的数据
 
-```
+```bash
 >>> state.regs.r  
 state.regs.r10                state.regs.r13w               state.regs.r9d
 state.regs.r10b               state.regs.r14                state.regs.r9w
@@ -446,7 +446,7 @@ state.regs.r10w               state.regs.r14d               state.regs.rbp
 
 以下 load 和 store 的函数声明和一些参数解释：
 
-```
+```python
 def load(self, addr, size=None, condition=None, fallback=None, add_constraints=None, action=None, endness=None,
              inspect=True, disable_actions=False, ret_on_segv=False):
         """
@@ -477,7 +477,7 @@ def store(self, addr, data, size=None, condition=None, add_constraints=None, end
 
 可选的值如下
 
-```
+```python
 LE – 小端序(little endian, least significant byte is stored at lowest address)
 BE – 大端序(big endian, most significant byte is stored at lowest address)
 ME – 中间序(Middle-endian. Yep.)
@@ -492,7 +492,7 @@ ME – 中间序(Middle-endian. Yep.)
 
 状态通过  `angr.options.<name>`获得，具体的选项可以查看 [列表](https://docs.angr.io/appendix/options) 。
 
-```
+```python
 >>> angr.options.
 Display all 143 possibilities? (y or n)
 angr.options.ABSTRACT_MEMORY
@@ -509,7 +509,7 @@ angr.options.APPROXIMATE_GUARDS
 
 在创建  `SimState`  对象时，可以通过关键字参数 `add_options` 和 `remove_options` 设置选项。
 
-```
+```python
 >>> s.options.add(angr.options.LAZY_SOLVES)
 # Create a new state with lazy solves enabled
 >>> s = proj.factory.entry_state(add_options={angr.options.LAZY_SOLVES})
@@ -533,7 +533,7 @@ history 存储的一些值以  `history.recent_NAME`  格式命名，对应的�
 
 如以下代码会按顺序输出基本块的地址。
 
-```
+```python
 for addr in state.history.bbl_addrs: 
     print hex(addr)
 ```
@@ -569,14 +569,14 @@ for addr in state.history.bbl_addrs:
 
 前面已经介绍过 SM，通过它我们可以同时控制一组 state 的符号执行。我们可以通过 stash 对一组 state 进行执行、筛选、合并和移动等操作。
 
-```
+```python
 >>> simgr = proj.factory.simulation_manager(state)
 <SimulationManager with 1 active>
 ```
 
 出于方便，我们也可以使用 `.simulation_manager`的简写 `.simgr`，如果不传入 `state`, angr 会使用 `entry_state` 进行初始化。
 
-```
+```python
 >>> simgr = proj.factory.simgr()
 >>> simgr.active
 [<SimState @ 0x4017b0>]
@@ -599,7 +599,7 @@ SM 中使用 stash 管理 state。一个 stash 包含多个 state。可以以 SM
 
 使用 .move 可以进行 stash 间的移动。每一个 stash 都是一个列表，可以通过索引或者迭代访问里面的数据。
 
-```
+```python
 >>> simgr.move(from_stash='deadended', to_stash='authenticated', filter_func=lambda s: b'Welcome' in s.posix.dumps(1))
 >>> simgr
 <SimulationManager with 2 authenticated, 1 deadended>
@@ -621,7 +621,7 @@ angr 会对 state 进行分类，归到不同的 stash，以下是部分特殊 s
 
 函数接口如下：
 
-```
+```python
 def explore(self, stash='active', n=None, find=None, avoid=None, find_stash='found', avoid_stash='avoid', cfg=None,
                 num_find=1, **kwargs):
 >>>  proj = angr.Project('examples/CSCI-4968-MBE/challenges/crackme0x00a/crackme0x00a')
@@ -665,7 +665,7 @@ angr 提供了多种 `explore` 技术，即进行路径探索时所采用的策�
 
 通过 `BVV(value,size)` 和 `BVS( name, size)` 接口创建位向量，也可以用 FPV 和 FPS 来创建浮点值和符号。
 
-```
+```python
 >>> one = state.solver.BVV(1, 64)
  <BV64 0x1>
 >>> one_hundred = state.solver.BVV(100, 64)
@@ -682,7 +682,7 @@ angr 提供了多种 `explore` 技术，即进行路径探索时所采用的策�
 
 如果两个位向量的长度不同无法进行运算的，需要将其扩展。 angr 提供 `zero_extend` 和 `sign_extend` 两种方式对向量进行拓展。
 
-```
+```python
 >>> weird_nine.zero_extend(64 - 27)
 <BV64 0x9>
 >>> one + weird_nine.zero_extend(64 - 27)
@@ -691,7 +691,7 @@ angr 提供了多种 `explore` 技术，即进行路径探索时所采用的策�
 
 创建符号变量：
 
-```
+```python
 >>> x = state.solver.BVS("x", 64)
 <BV64 x_9_64>
 >>> y = state.solver.BVS("y", 64)
@@ -700,7 +700,7 @@ angr 提供了多种 `explore` 技术，即进行路径探索时所采用的策�
 
 对其进行算术操作会得到 AST (抽象语法树)，而不是具体的值，AST 可以转化成约束，使用 SMT 求解器求解。
 
-```
+```python
 >>> x + one
 <BV64 x_9_64 + 0x1>
 >>> (x + one) / 2
@@ -713,7 +713,7 @@ angr 提供了多种 `explore` 技术，即进行路径探索时所采用的策�
 
 将两个相似的 AST 进行比较会得到一个 AST, 这是符号化的布尔类型，使用 `solver.is_true`和 `solver.is_false` 获得真假值。
 
-```
+```python
 >>> x == 1
 <Bool x_9_64 == 0x1>
 >>> x == one
@@ -728,7 +728,7 @@ angr 提供了多种 `explore` 技术，即进行路径探索时所采用的策�
 
 我们可以通过 `.add` 对 state 对象添加约束，并使用 `.eval` 接口求解，得到符号变量的可行解。
 
-```
+```python
 >>> state.solver.add(x > y)
 >>> state.solver.add(y > 2)
 >>> state.solver.add(10 > x)
@@ -737,7 +737,7 @@ angr 提供了多种 `explore` 技术，即进行路径探索时所采用的策�
 
 因此，我们可以根据输出和限制得到输入值，举个例子：
 
-```
+```python
 # get a fresh state without constraints
 >>> state = proj.factory.entry_state()
 >>> input = state.solver.BVS('input', 64)
@@ -809,7 +809,7 @@ CFGFast  使用静态分析获得 CFG, 速度较快，但是不太准确。 CFGE
 
 使用示例
 
-```
+```python
 >>> import angr
 >>> p = angr.Project('/bin/true', load_options={'auto_load_libs': False})
 >>> cfg = p.analyses.CFGFast()
@@ -835,7 +835,7 @@ CFGFast  使用静态分析获得 CFG, 速度较快，但是不太准确。 CFGE
 
 以下是文档的使用示例
 
-```
+```python
 >>> import angr
 # Load the project
 >>> b = angr.Project("examples/fauxware/fauxware", load_options={"auto_load_libs": False})
@@ -876,7 +876,7 @@ CFGFast  使用静态分析获得 CFG, 速度较快，但是不太准确。 CFGE
 
 用于识别库函数，目前仅针对 CGC 文件。
 
-```
+```python
 >>> import angr
 
 # get all the matches
